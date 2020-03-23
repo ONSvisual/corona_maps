@@ -325,6 +325,7 @@ if(Modernizr.webgl) {
 })
 
 		$(".search-control").click(function() {
+			d3.select(".search-control").style("text-transform","uppercase");
 			$(".search-control").val('');
 		})
 
