@@ -21,14 +21,12 @@ if(Modernizr.webgl) {
 		firsthover = true;
 
 
-		layernames = ["seventyper","eighty5per"];
-		layername = "seventyper";
+		layernames = ["pden_ppkm"];
+		layername = "pden_ppkm";
 
-		hoverlayernames = ["seventyper","eighty5per"];
-		hoverlayername = "seventyper";
+		hoverlayernames = ["pden_ppkm"];
+		hoverlayername = "pden_ppkm";
 
-		secondvars = ["seventy","eighty5"];
-		secondvar = "seventy";
 
 		// windowheight = window.innerHeight;
 		// d3.select("#map").style("height",windowheight + "px")
@@ -383,7 +381,7 @@ if(Modernizr.webgl) {
 
 				 	if(features.length != 0){
 
-						setAxisVal(features[0].properties.lsoa11nm, features[0].properties.lsoa11cd,features[0].properties[hoverlayername],features[0].properties[secondvar]);
+						setAxisVal(features[0].properties.lsoa11nm, features[0].properties.lsoa11cd,features[0].properties[hoverlayername]);
 						//updatePercent(e.features[0]);
 					}
 					//setAxisVal(e.features[0].properties.lsoa11nm, e.features[0].properties["houseprice"]);
@@ -426,14 +424,14 @@ if(Modernizr.webgl) {
 					if(map.getZoom() > 9) {
 						map.setFilter("lsoa-outlines-hover", ["==", "lsoa11cd", e.features[0].properties.lsoa11cd]);
 						//var features = map.queryRenderedFeatures(e.point,{layers: ['lsoa-outlines']});
-						setAxisVal(features[0].properties.lsoa11nm, features[0].properties.lsoa11cd,features[0].properties[hoverlayername],features[0].properties[secondvar]);
+						setAxisVal(features[0].properties.lsoa11nm, features[0].properties.lsoa11cd,features[0].properties[hoverlayername]);
 
 
 
 					} else {
 						map.setFilter("lsoa-outlines-hover2", ["==", "lsoa11cd", e.features[0].properties.lsoa11cd]);
 						//var features = map.queryRenderedFeatures(e.point,{layers: ['lsoa-outlines2']});
-						setAxisVal(features[0].properties.lsoa11nm, features[0].properties.lsoa11cd,features[0].properties[hoverlayername],features[0].properties[secondvar]);
+						setAxisVal(features[0].properties.lsoa11nm, features[0].properties.lsoa11cd,features[0].properties[hoverlayername]);
 
 					}
 				}
@@ -465,13 +463,13 @@ if(Modernizr.webgl) {
 		}
 
 
-		function setAxisVal(areanm, areacd, areaval, areanum) {
+		function setAxisVal(areanm, areacd, areaval) {
 
 			d3.select("#keyvalue").style("font-weight","bold").html(function(){
 				if(!isNaN(areaval)) {
-					return areanm + "<br>" + displayformat(areaval) + "% (" + areanum +" people)";
+					return areanm + "<br>" + displayformat(areaval) + " people per sqkm";
 				} else {
-					return areanm + "<br>" + displayformat(areaval) + "% (" + areanum +" people)";
+					return areanm + "<br>" + displayformat(areaval) + " people per sqkm";
 				}
 			});
 
@@ -514,9 +512,17 @@ if(Modernizr.webgl) {
 
 		function createKey(config){
 
+
+
+			//
+
 					d3.select("#key").selectAll("*").remove();
 
+
+
+
 					keywidth = d3.select("#keydiv").node().getBoundingClientRect().width;
+
 
 					var svgkey = d3.select("#key")
 						.attr("width", keywidth)
@@ -525,6 +531,32 @@ if(Modernizr.webgl) {
 					var color = d3.scaleThreshold()
 					   .domain(breaks)
 					   .range(colour);
+
+
+					// setup defs
+					 stops =	d3.select("#key")
+							 .append("defs")
+							 .append("linearGradient")
+							 .attr("id","Gradient1")
+							 .attr("x1","0")
+							 .attr("x2","1")
+							 .attr("y1","0")
+							 .attr("y2","0");
+
+					 stops.append("stop")
+							 .attr("class","stop1")
+							 .attr("offset","0%")
+							 .attr("stop-color",colour[dvc.varcolour.length - 1])
+
+					 stops.append("stop")
+							 .attr("class","stop2")
+							 .attr("offset","80%")
+							 .attr("stop-color",colour[dvc.varcolour.length - 1])
+
+					 stops.append("stop")
+							 .attr("class","stop2")
+							 .attr("offset","100%")
+							 .attr("stop-color","#fff")
 
 					// Set up scales for legend
 					x = d3.scaleLinear()
@@ -535,7 +567,7 @@ if(Modernizr.webgl) {
 					var xAxis = d3.axisBottom(x)
 						.tickSize(15)
 						.tickValues(color.domain())
-						.tickFormat(function(d) { return legendformat(d) + "%"; });
+						.tickFormat(function(d) { return legendformat(d)});
 
 					var g2 = svgkey.append("g").attr("id","horiz")
 						.attr("transform", "translate(15,5)");
@@ -563,6 +595,8 @@ if(Modernizr.webgl) {
 						.attr("stroke","black")
 						.attr("stroke-width","0px")
 						.style("fill", function(d) { return d.z; });
+
+
 
 
 					g2.append("line")
@@ -596,6 +630,9 @@ if(Modernizr.webgl) {
 						.attr("width", function(d) { return d.x1 - d.x0; })
 						.style("fill", function(d) { return d.z; });
 
+						//apply fade
+					d3.select("#block5").style("fill","url(#Gradient1)")
+
 					keyhor.call(xAxis).append("text")
 						.attr("id", "caption")
 						.attr("x", 50)
@@ -603,7 +640,27 @@ if(Modernizr.webgl) {
 						.attr("fill","#323132")
 						.style("text-anchor","left")
 						.attr("font-size","14px")
-						.text("% of population");
+						.text("people per sqkm");
+
+						// manually edit legend ticks
+					d3.selectAll(".tick text").text(function(d,i){
+						console.log(d);
+						if(d =="20000"){
+							return "20,000+"
+
+						} else if(d=="30000") {
+							return "";
+						} else {
+							return legendformat(d);
+						}
+					})
+
+					d3.selectAll(".tick").filter(function(d, i,list) {
+							return i === list.length - 1;
+						}).attr("display","none")
+
+						d3.select(".domain").attr("display","none");
+
 
 					keyhor.append("rect")
 						.attr("id","keybar")
@@ -637,40 +694,43 @@ if(Modernizr.webgl) {
 
 				//draw radio buttons
 
-				d3.select("#radioselect")
-							.append("p")
-							.style("padding-left","10px")
-							.style("font-size","16px")
-							.style("margin-bottom","3px")
-							//.text("Income before/after housing costs")
+				if(keydata.ons.legendvars.length > 1) {
 
-
-				radio = d3.select("#radioselect")
-									.selectAll('rad')
-									.data(keydata.ons.legendvars)
-									.enter()
-									.append('div')
-									.style("float","left")
+						d3.select("#radioselect")
+									.append("p")
 									.style("padding-left","10px")
+									.style("font-size","16px")
+									.style("margin-bottom","3px")
+									//.text("Income before/after housing costs")
 
 
-					radio.append("input")
-							.attr("id",function(d,i){return "radio"+i})
-							.attr("class","input input--radio js-focusable")
-							.attr("type","radio")
-							.attr("name","layerchoice")
+						radio = d3.select("#radioselect")
+											.selectAll('rad')
+											.data(keydata.ons.legendvars)
+											.enter()
+											.append('div')
+											.style("float","left")
+											.style("padding-left","10px")
+
+
+							radio.append("input")
+									.attr("id",function(d,i){return "radio"+i})
+									.attr("class","input input--radio js-focusable")
+									.attr("type","radio")
+									.attr("name","layerchoice")
+									.attr("value", function(d,i){return layernames[i]})
+									.property("checked", function(d,i){if(i==0){return true}})
+									.on("click",repaintLayer)
+
+							radio.append('label')
+							.attr('class','legendlabel').text(function(d,i) {
+								var value = parseFloat(d).toFixed(1);
+								return d;
+							})
 							.attr("value", function(d,i){return layernames[i]})
-							.property("checked", function(d,i){if(i==0){return true}})
-							.on("click",repaintLayer)
+							.on("click",repaintLayer);
 
-					radio.append('label')
-					.attr('class','legendlabel').text(function(d,i) {
-						var value = parseFloat(d).toFixed(1);
-						return d;
-					})
-					.attr("value", function(d,i){return layernames[i]})
-					.on("click",repaintLayer);
-
+				}
 
 
 
@@ -683,7 +743,7 @@ if(Modernizr.webgl) {
 
 				getindexoflayer = layernames.indexOf(layername)
 				hoverlayername = hoverlayernames[getindexoflayer];
-				secondvar = secondvars[getindexoflayer];
+				// secondvar = secondvars[getindexoflayer];
 
 				//redraw key
 				breaks = config.ons.breaks[getindexoflayer];
@@ -720,7 +780,7 @@ if(Modernizr.webgl) {
 
 				console.log(features)
 				if(typeof features !== 'undefined' ) {
-					setAxisVal(features[0].properties.lsoa11nm, features[0].properties.lsoa11cd,features[0].properties[hoverlayername],features[0].properties[secondvar]);
+					setAxisVal(features[0].properties.lsoa11nm, features[0].properties.lsoa11cd,features[0].properties[hoverlayername]);
 
  			 }
 
@@ -878,7 +938,7 @@ if(Modernizr.webgl) {
 		 		map.setFilter("lsoa-outlines-hover", ["==", "lsoa11cd", features[0].properties.lsoa11cd]);
 				//var features = map.queryRenderedFeatures(point);
 				disableMouseEvents();
-				setAxisVal(features[0].properties.lsoa11nm, features[0].properties.lsoa11cd,features[0].properties[hoverlayername],features[0].properties[secondvar]);
+				setAxisVal(features[0].properties.lsoa11nm, features[0].properties.lsoa11cd,features[0].properties[hoverlayername]);
 				//updatePercent(features[0]);
 		 		clearInterval(tilechecker);
 		 	}

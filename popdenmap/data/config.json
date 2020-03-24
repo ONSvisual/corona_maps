@@ -1,14 +1,14 @@
 {"ons":{
 "maptitle": "Small area population estimates - LSOA",
 "varcolour": ["#7fcdbb", "#41b6c4", "#1d91c0", "#225ea8", "#0c2c84"],
-"legendvars":["% Aged 70+","% Aged 85+"],
+"legendvars":["Population density"],
 "varunit": "&nbsp;&nbsp;<b>&#x25B2;</b> <br>10% least deprived areas",
 "varunit2": "&#x25B2;&nbsp;&nbsp;<br>10% most deprived areas",
 "varunit3": "10% highest income areas <br>&nbsp;&nbsp;&darr;",
 "varunit4": "10% lowest income areas <br>&nbsp;&nbsp;&darr;",
-"displaydecimals": 1,
+"displaydecimals": 0,
 "legenddecimals": 0,
-"breaks": [[0,9,13,19,26,53],[0,2,3,5,7,19]],
+"breaks": [[0,2500,6000,12000,20000,30000]],
 "dropticks": true,
 "numberBreaks":5
 }}
