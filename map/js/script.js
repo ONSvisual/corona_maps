@@ -127,7 +127,6 @@ if(Modernizr.webgl) {
 
 		map.on('load', function() {
 
-
 			map.addLayer({
 				"id": "lsoa-outlines",
 				"type": "fill",
@@ -136,46 +135,19 @@ if(Modernizr.webgl) {
 					//"tiles": ["http://localhost:8000/boundaries/{z}/{x}/{y}.pbf"],
 					"tiles": ["https://cdn.ons.gov.uk/maptiles/t26/boundaries/{z}/{x}/{y}.pbf"],
 				},
-				"minzoom": 9,
+				"minzoom": 4,
 				"maxzoom": 20,
 				"source-layer": "boundaries",
 				"layout": {},
 				'paint': {
-						'fill-opacity':0.2,
-						'fill-outline-color':'rgba(0,0,0,0)',
-						'fill-color': {
-								// Refers to the data of that specific property of the polygon
-							'property': layername,
-							'default': '#666666',
-							// Prevents interpolation of colors between stops
-							'base': 0,
-						'stops': [
-							[dvc.breaks[0][0], dvc.varcolour[0]],
-							[dvc.breaks[0][1], dvc.varcolour[0]],
-							[dvc.breaks[0][2], dvc.varcolour[1]],
-							[dvc.breaks[0][3], dvc.varcolour[2]],
-							[dvc.breaks[0][4], dvc.varcolour[3]],
-							[dvc.breaks[0][5], dvc.varcolour[4]]
-						]
-						}
-
-					}
-			}, 'highway_name_other');
-
-			map.addLayer({
-				"id": "lsoa-outlines2",
-				"type": "fill",
-				"source": {
-					"type": "vector",
-					//"tiles": ["http://localhost:8000/boundaries/{z}/{x}/{y}.pbf"],
-					"tiles": ["https://cdn.ons.gov.uk/maptiles/t26/boundaries/{z}/{x}/{y}.pbf"],
-				},
-				"minzoom": 4,
-				"maxzoom": 9,
-				"source-layer": "boundaries",
-				"layout": {},
-				'paint': {
-						'fill-opacity':0.5,
+						'fill-opacity': [
+							'interpolate',
+							  ['linear'],
+							  // ['zoom'] indicates zoom, default at lowest number, threshold, value above threshold
+							  ['zoom'],
+							  8, 0.6,
+							  9, 0.2
+						],
 						'fill-outline-color':'rgba(0,0,0,0)',
 						'fill-color': {
 								// Refers to the data of that specific property of the polygon
@@ -238,28 +210,8 @@ if(Modernizr.webgl) {
 						//"tiles": ["http://localhost:8000/boundaries/{z}/{x}/{y}.pbf"],
 						"tiles": ["https://cdn.ons.gov.uk/maptiles/t26/boundaries/{z}/{x}/{y}.pbf"],
 					},
-					"minzoom": 9,
-					"maxzoom": 20,
-					"source-layer": "boundaries",
-					"layout": {},
-					"paint": {
-						"line-color": "orange",
-						"line-width": 3
-					},
-					"filter": ["==", "lsoa11cd", ""]
-				}, 'place_suburb');
-
-
-				map.addLayer({
-					"id": "lsoa-outlines-hover2",
-					"type": "line",
-					"source": {
-						"type": "vector",
-						//"tiles": ["http://localhost:8000/boundaries/{z}/{x}/{y}.pbf"],
-						"tiles": ["https://cdn.ons.gov.uk/maptiles/t26/boundaries/{z}/{x}/{y}.pbf"],
-					},
 					"minzoom": 4,
-					"maxzoom": 9,
+					"maxzoom": 20,
 					"source-layer": "boundaries",
 					"layout": {},
 					"paint": {
@@ -305,17 +257,14 @@ if(Modernizr.webgl) {
 
 			//Highlight stroke on mouseover (and show area information)
 			map.on("mousemove", "lsoa-outlines", onMove);
-			map.on("mousemove", "lsoa-outlines2", onMove);
 
 			// Reset the lsoa-fills-hover layer's filter when the mouse leaves the layer.
 			map.on("mouseleave", "lsoa-outlines", onLeave);
-			map.on("mouseleave", "lsoa-outlines2", onLeave);
 
 			map.getCanvasContainer().style.cursor = 'pointer';
 
 			//Add click event
 			map.on('click', 'lsoa-outlines', onClick);
-			map.on('click', 'lsoa-outlines2', onClick);
 
 			//get location on click
 			d3.select(".mapboxgl-ctrl-geolocate").on("click", geolocate);
@@ -370,17 +319,8 @@ if(Modernizr.webgl) {
 				if(newlsoa11cd != oldlsoa11cd) {
 					oldlsoa11cd = e.features[0].properties.lsoa11cd;
 
-					if(map.getZoom() > 9) {
-						map.setFilter("lsoa-outlines-hover", ["==", "lsoa11cd", e.features[0].properties.lsoa11cd]);
-						var features = map.queryRenderedFeatures(e.point,{layers: ['lsoa-outlines']});
-
-
-					} else {
-						map.setFilter("lsoa-outlines-hover2", ["==", "lsoa11cd", e.features[0].properties.lsoa11cd]);
-						var features = map.queryRenderedFeatures(e.point,{layers: ['lsoa-outlines2']});
-
-					}
-
+					map.setFilter("lsoa-outlines-hover", ["==", "lsoa11cd", e.features[0].properties.lsoa11cd]);
+					var features = map.queryRenderedFeatures(e.point,{layers: ['lsoa-outlines']});
 
 				 	if(features.length != 0){
 
@@ -424,19 +364,9 @@ if(Modernizr.webgl) {
 		 		newlsoa11cd = features[0].properties.lsoa11cd;
 
 				if(newlsoa11cd != oldlsoa11cd) {
-					if(map.getZoom() > 9) {
-						map.setFilter("lsoa-outlines-hover", ["==", "lsoa11cd", e.features[0].properties.lsoa11cd]);
-						//var features = map.queryRenderedFeatures(e.point,{layers: ['lsoa-outlines']});
-						setAxisVal(features[0].properties.lsoa11nm, features[0].properties.lsoa11cd,features[0].properties[hoverlayername],features[0].properties[secondvar]);
-
-
-
-					} else {
-						map.setFilter("lsoa-outlines-hover2", ["==", "lsoa11cd", e.features[0].properties.lsoa11cd]);
-						//var features = map.queryRenderedFeatures(e.point,{layers: ['lsoa-outlines2']});
-						setAxisVal(features[0].properties.lsoa11nm, features[0].properties.lsoa11cd,features[0].properties[hoverlayername],features[0].properties[secondvar]);
-
-					}
+					map.setFilter("lsoa-outlines-hover", ["==", "lsoa11cd", e.features[0].properties.lsoa11cd]);
+					//var features = map.queryRenderedFeatures(e.point,{layers: ['lsoa-outlines']});
+					setAxisVal(features[0].properties.lsoa11nm, features[0].properties.lsoa11cd,features[0].properties[hoverlayername],features[0].properties[secondvar]);
 				}
 
 		 		// if(newlsoa11cd != oldlsoa11cd) {
@@ -716,8 +646,6 @@ if(Modernizr.webgl) {
 				map.setPaintProperty("imdlayer", 'fill-color', styleObject);
 
 				map.setPaintProperty("lsoa-outlines", 'fill-color', styleObject);
-
-				map.setPaintProperty("lsoa-outlines2", 'fill-color', styleObject);
 
 				console.log(features)
 				if(typeof features !== 'undefined' ) {
